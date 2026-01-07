@@ -1,0 +1,51 @@
+"""
+Tests for ContractReader module.
+"""
+
+import pytest
+import os
+from contractai.contract_reader import ContractReader
+
+
+class TestContractReader:
+    """Tests for ContractReader class."""
+
+    def test_init(self):
+        """Test ContractReader initialization."""
+        reader = ContractReader()
+        assert reader.supported_formats == [".docx", ".pdf"]
+
+    def test_unsupported_format(self, tmp_path):
+        """Test error handling for unsupported file format."""
+        reader = ContractReader()
+        # Create a temporary txt file
+        test_file = tmp_path / "test.txt"
+        test_file.write_text("test content")
+        with pytest.raises(ValueError, match="Unsupported file format"):
+            reader.read_contract(str(test_file))
+
+    def test_file_not_found(self):
+        """Test error handling for missing file."""
+        reader = ContractReader()
+        with pytest.raises(FileNotFoundError):
+            reader.read_contract("nonexistent.docx")
+
+    def test_preprocess_with_attachments(self, tmp_path):
+        """Test preprocessing functionality."""
+        reader = ContractReader()
+        
+        # Create a temporary docx file with sample content
+        from docx import Document
+        doc = Document()
+        doc.add_paragraph("This is a test contract with multiple words.")
+        test_file = tmp_path / "test.docx"
+        doc.save(str(test_file))
+        
+        result = reader.preprocess_with_attachments(str(test_file))
+
+        assert "processed_text" in result
+        assert "word_count" in result
+        assert "character_count" in result
+        assert "metadata" in result
+        assert result["word_count"] > 0
+        assert result["character_count"] > 0
