@@ -1,0 +1,1 @@
+"""Example contracts for testing."""
