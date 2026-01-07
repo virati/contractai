@@ -15,11 +15,14 @@ class TestContractReader:
         reader = ContractReader()
         assert reader.supported_formats == [".docx", ".pdf"]
 
-    def test_unsupported_format(self):
+    def test_unsupported_format(self, tmp_path):
         """Test error handling for unsupported file format."""
         reader = ContractReader()
+        # Create a temporary txt file
+        test_file = tmp_path / "test.txt"
+        test_file.write_text("test content")
         with pytest.raises(ValueError, match="Unsupported file format"):
-            reader.read_contract("test.txt")
+            reader.read_contract(str(test_file))
 
     def test_file_not_found(self):
         """Test error handling for missing file."""
