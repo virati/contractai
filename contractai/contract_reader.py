@@ -78,33 +78,39 @@ class ContractReader:
                 text_content.append(page.extract_text())
         return "\n".join(text_content)
 
-    def preprocess_with_attachments(self, text: str) -> Dict[str, Any]:
+    def preprocess_with_attachments(self, file_path: str) -> Dict[str, Any]:
         """
-        Preprocess contract text using the attachments library.
+        Preprocess contract file using the attachments library.
 
         Args:
-            text: Raw contract text
+            file_path: Path to the contract file
 
         Returns:
-            Preprocessed contract data as a dictionary
+            Preprocessed contract data as a dictionary with text and metadata
         """
         try:
-            import attachments
+            from attachments import Attachments
 
-            # Use attachments library to preprocess the text
-            # The attachments library typically helps with parsing structured data
-            preprocessed = {
-                "raw_text": text,
-                "processed_text": text.strip(),
-                "word_count": len(text.split()),
-                "character_count": len(text),
-            }
-            return preprocessed
-        except ImportError:
-            # Fallback if attachments library is not available
+            # Use attachments library to process the file
+            # This library provides LLM-ready text extraction and preprocessing
+            att = Attachments(file_path)
+            
+            # Extract processed text and metadata
+            processed_text = str(att)  # LLM-ready text format
+            metadata = att.metadata
+            
             return {
-                "raw_text": text,
+                "processed_text": processed_text,
+                "metadata": metadata,
+                "word_count": len(processed_text.split()),
+                "character_count": len(processed_text),
+            }
+        except Exception as e:
+            # Fallback to basic preprocessing if attachments fails
+            text = self.read_contract(file_path)
+            return {
                 "processed_text": text.strip(),
+                "metadata": {},
                 "word_count": len(text.split()),
                 "character_count": len(text),
             }

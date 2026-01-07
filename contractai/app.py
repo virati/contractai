@@ -53,12 +53,15 @@ class ContractAssessmentApp:
                 "Must be 'contractor', 'company', or 'both'"
             )
 
+        # Check if file exists
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Contract file not found: {file_path}")
+
         # Read and preprocess the contract
         print(f"Reading contract from: {file_path}")
-        contract_text = self.reader.read_contract(file_path)
-
-        print("Preprocessing contract...")
-        preprocessed = self.reader.preprocess_with_attachments(contract_text)
+        
+        print("Preprocessing contract with attachments library...")
+        preprocessed = self.reader.preprocess_with_attachments(file_path)
 
         # Get assessments based on perspective
         print(f"Assessing contract from {perspective} perspective(s)...")

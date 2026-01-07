@@ -24,13 +24,15 @@ def demo_contract_reading():
     print("-" * 80)
     print(contract_text[:500] + "...")
     
-    # Preprocess the contract
+    # Preprocess the contract with attachments library
     print(f"\n3. Preprocessing with attachments library...")
-    preprocessed = reader.preprocess_with_attachments(contract_text)
+    preprocessed = reader.preprocess_with_attachments(contract_path)
     
     print(f"\n4. Preprocessing Results:")
     print(f"   - Word Count: {preprocessed['word_count']}")
     print(f"   - Character Count: {preprocessed['character_count']}")
+    if preprocessed.get('metadata'):
+        print(f"   - Metadata: {preprocessed['metadata']}")
     
     # Show what the advocates would analyze
     print(f"\n5. DSPy Advocate Architecture:")
