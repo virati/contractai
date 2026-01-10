@@ -6,11 +6,14 @@ __version__ = "0.1.0"
 
 from .contract_reader import ContractReader
 from .advocates import ContractorAdvocate, CompanyAdvocate
+from .reconciliation import ReconciliationModule, TunableReconciliationAssessor
 from .app import ContractAssessmentApp
 
 __all__ = [
     "ContractReader",
     "ContractorAdvocate",
     "CompanyAdvocate",
+    "ReconciliationModule",
+    "TunableReconciliationAssessor",
     "ContractAssessmentApp",
 ]

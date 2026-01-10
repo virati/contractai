@@ -28,13 +28,36 @@ def main():
         help="Language model to use (e.g., 'openai/gpt-3.5-turbo')",
         default=None,
     )
+    parser.add_argument(
+        "--contractor-weight",
+        type=float,
+        default=0.5,
+        help="Weight for contractor perspective (0-1, default: 0.5)",
+    )
+    parser.add_argument(
+        "--company-weight",
+        type=float,
+        default=0.5,
+        help="Weight for company perspective (0-1, default: 0.5)",
+    )
+    parser.add_argument(
+        "--no-reconciliation",
+        action="store_true",
+        help="Disable reconciliation analysis (only for 'both' perspective)",
+    )
 
     args = parser.parse_args()
 
     try:
         # Initialize and run the app
         app = ContractAssessmentApp(lm_model=args.model)
-        result = app.assess_contract(args.contract_file, args.perspective)
+        result = app.assess_contract(
+            args.contract_file,
+            args.perspective,
+            contractor_weight=args.contractor_weight,
+            company_weight=args.company_weight,
+            include_reconciliation=not args.no_reconciliation,
+        )
         app.print_assessment(result)
 
     except FileNotFoundError as e:

@@ -8,6 +8,7 @@ import dspy
 
 from .contract_reader import ContractReader
 from .advocates import ContractorAdvocate, CompanyAdvocate, DualAdvocateAssessor
+from .reconciliation import TunableReconciliationAssessor
 
 
 class ContractAssessmentApp:
@@ -24,7 +25,7 @@ class ContractAssessmentApp:
                      If None, uses default DSPy configuration
         """
         self.reader = ContractReader()
-        self.assessor = DualAdvocateAssessor()
+        self.assessor = TunableReconciliationAssessor()
 
         # Configure DSPy language model if provided
         if lm_model:
@@ -32,7 +33,12 @@ class ContractAssessmentApp:
             dspy.settings.configure(lm=lm)
 
     def assess_contract(
-        self, file_path: str, perspective: str = "both"
+        self,
+        file_path: str,
+        perspective: str = "both",
+        contractor_weight: float = 0.5,
+        company_weight: float = 0.5,
+        include_reconciliation: bool = True,
     ) -> Dict[str, Any]:
         """
         Assess a contract file from specified perspective(s).
@@ -40,6 +46,9 @@ class ContractAssessmentApp:
         Args:
             file_path: Path to the contract file (docx or pdf)
             perspective: Assessment perspective - 'contractor', 'company', or 'both'
+            contractor_weight: Weight for contractor perspective (0-1, default 0.5)
+            company_weight: Weight for company perspective (0-1, default 0.5)
+            include_reconciliation: Include reconciliation analysis (default True)
 
         Returns:
             Assessment results including preprocessing info and advocate assessments
@@ -66,7 +75,12 @@ class ContractAssessmentApp:
         # Get assessments based on perspective
         print(f"Assessing contract from {perspective} perspective(s)...")
         if perspective == "both":
-            assessments = self.assessor(preprocessed["processed_text"])
+            assessments = self.assessor(
+                contract_text=preprocessed["processed_text"],
+                contractor_weight=contractor_weight,
+                company_weight=company_weight,
+                include_reconciliation=include_reconciliation,
+            )
         elif perspective == "contractor":
             contractor_advocate = ContractorAdvocate()
             contractor_assessment = contractor_advocate(preprocessed["processed_text"])
@@ -131,5 +145,24 @@ class ContractAssessmentApp:
             print(f"\nAssessment:\n{cv['assessment']}")
             print(f"\nKey Concerns:\n{cv['key_concerns']}")
             print(f"\nRecommendations:\n{cv['recommendations']}")
+
+        if "reconciliation" in assessments:
+            print("\n" + "-" * 80)
+            print("RECONCILIATION & COMPROMISE ANALYSIS")
+            print("-" * 80)
+            rec = assessments["reconciliation"]
+            print(f"\nWeights Applied:")
+            print(f"  - Contractor: {rec['weights']['contractor']:.2f}")
+            print(f"  - Company: {rec['weights']['company']:.2f}")
+            print(f"\nCommon Ground:")
+            print(f"{rec['common_ground']}")
+            print(f"\nIdentified Conflicts:")
+            print(f"{rec['conflicts']}")
+            print(f"\nProposed Compromises:")
+            print(f"{rec['compromises']}")
+            print(f"\nRationale:")
+            print(f"{rec['rationale']}")
+            print(f"\nImplementation Steps:")
+            print(f"{rec['implementation_steps']}")
 
         print("\n" + "=" * 80)
